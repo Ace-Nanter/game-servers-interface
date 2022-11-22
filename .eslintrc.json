@@ -1,0 +1,62 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["prettier"],
+  "extends": ["prettier", "eslint:recommended", "airbnb"],
+  "rules": {
+    "prettier/prettier": "error",
+    "no-use-before-define": [
+      2,
+      {
+        "functions": false
+      }
+    ],
+    "import/extensions": [
+      "error",
+      {
+        "*": "always",
+        "ts": "ignorePackages",
+        "js": "ignorePackages"
+      }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        "devDependencies": ["**/*.spec.tsx", "**/*.stories.tsx"]
+      }
+    ],
+    "import/no-unresolved": [
+      2,
+      {
+        "ignore": ["@iv4/*"]
+      }
+    ],
+    "import/order": [
+      "error",
+      {
+        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        }
+      }
+    ],
+
+    "no-console": [
+      2,
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "no-alert": 2
+  },
+  "overrides": [
+    {
+      "files": ["**/*.config.[t,j]s", "**/*.setup.[t,j]s"],
+      "rules": {
+        "global-require": 0,
+        "import/no-extraneous-dependencies": 0
+      }
+    }
+  ]
+}

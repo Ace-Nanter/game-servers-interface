@@ -12,5 +12,5 @@ RUN npm install --production
 # Bundle app source
 COPY dist ./
 
-# Start me!
-CMD node app.js
+# Start application
+CMD node main.js

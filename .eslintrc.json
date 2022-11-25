@@ -1,9 +1,22 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["prettier"],
-  "extends": ["prettier", "eslint:recommended", "airbnb"],
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "tsconfigRootDir": ".",
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint/eslint-plugin", "prettier"],
+  "extends": ["prettier", "eslint:recommended"],
+  "env": {
+    "node": true,
+    "jest": true
+  },
   "rules": {
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "prettier/prettier": "error",
     "no-use-before-define": [
       2,
@@ -11,44 +24,12 @@
         "functions": false
       }
     ],
-    "import/extensions": [
-      "error",
-      {
-        "*": "always",
-        "ts": "ignorePackages",
-        "js": "ignorePackages"
-      }
-    ],
-    "import/no-extraneous-dependencies": [
-      "error",
-      {
-        "devDependencies": ["**/*.spec.tsx", "**/*.stories.tsx"]
-      }
-    ],
-    "import/no-unresolved": [
-      2,
-      {
-        "ignore": ["@iv4/*"]
-      }
-    ],
-    "import/order": [
-      "error",
-      {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index", "object", "type"],
-        "alphabetize": {
-          "order": "asc",
-          "caseInsensitive": true
-        }
-      }
-    ],
-
     "no-console": [
       2,
       {
         "allow": ["warn", "error"]
       }
-    ],
-    "no-alert": 2
+    ]
   },
   "overrides": [
     {

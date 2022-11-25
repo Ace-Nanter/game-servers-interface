@@ -1,5 +1,5 @@
 import { DockerService } from './docker.service';
-import { Status } from './../interfaces/status.interface';
+import { Status } from '../models/status.type';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -8,9 +8,7 @@ export class StatusService {
   constructor(private readonly dockerService: DockerService) {}
 
   async getServerStatus(): Promise<Status> {
-    // eslint-disable-next-line no-console
-    console.log(await this.dockerService.getContainerStatus());
-    return 'STARTED';
+    return await this.dockerService.getContainerStatus();
   }
 
   async getPlayersOnline(): Promise<string[]> {

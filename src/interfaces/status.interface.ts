@@ -1,1 +1,1 @@
-export type Status = 'ONLINE' | 'OFFLINE';
+export type Status = 'STARTED' | 'STOPPED';

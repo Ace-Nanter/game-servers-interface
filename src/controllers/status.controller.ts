@@ -7,12 +7,12 @@ export class StatusController {
   constructor(private statusService: StatusService) {}
 
   @Get('server')
-  getServerStatus(): string {
-    return this.statusService.getServerStatus();
+  async getServerStatus(): Promise<string> {
+    return await this.statusService.getServerStatus();
   }
 
   @Get('players')
-  getPlayersOnline(): string[] {
-    return this.statusService.getPlayersOnline();
+  async getPlayersOnline(): Promise<string[]> {
+    return await this.statusService.getPlayersOnline();
   }
 }

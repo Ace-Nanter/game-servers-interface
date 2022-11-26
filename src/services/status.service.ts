@@ -1,13 +1,17 @@
-import { Status } from './../interfaces/status.interface';
+import { DockerService } from './docker.service';
+import { Status } from '../models/status.type';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class StatusService {
-  getServerStatus(): Status {
-    return 'ONLINE';
+  // eslint-disable-next-line no-unused-vars
+  constructor(private readonly dockerService: DockerService) {}
+
+  async getServerStatus(): Promise<Status> {
+    return await this.dockerService.getContainerStatus();
   }
 
-  getPlayersOnline(): string[] {
+  async getPlayersOnline(): Promise<string[]> {
     return ['Ace Nanter'];
   }
 }

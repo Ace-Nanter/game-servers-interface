@@ -41,19 +41,16 @@ export class DockerService {
    */
   async startContainer(): Promise<void> {
     Logger.log('Starting container...');
-    await firstValueFrom(
-      this.httpService.post(`/containers/${config.CONTAINER_NAME}/start`).pipe(
-        tap(() => {
-          Logger.log('Container started');
-        }),
-        catchError((error) => {
-          Logger.error(error);
-          throw 'An error happened!';
-        }),
-      ),
-    );
+    try {
+      await firstValueFrom(this.httpService.post(`/containers/${config.CONTAINER_NAME}/start`));
+    } catch (error) {
+      Logger.error(error);
+      return Promise.reject(error);
+    }
 
-    return;
+    Logger.log('Container started');
+
+    return Promise.resolve();
   }
 
   /**

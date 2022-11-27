@@ -13,7 +13,7 @@ export class CommandsService {
   async startContainer(): Promise<void> {
     setTimeout(() => {
       this.rconService.reconnect();
-    }, 20000);
+    }, 120000);
     return await this.dockerService.startContainer();
   }
 

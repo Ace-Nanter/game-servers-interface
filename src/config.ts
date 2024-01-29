@@ -15,10 +15,10 @@ export const config = {
     rcon_password: process.env.ARK_RCON_PASSWORD || '',
   },
   palworld: {
-    container_name: process.env.PALWORLD_CONTAINER_NAME || 'palworld-server',
-    rcon_host: process.env.PALWORLD_RCON_HOST || '192.168.1.20',
-    rcon_port: process.env.PALWORLD_RCON_PORT ? parseInt(process.env.PALWORLD_RCON_PORT) : 25575,
-    rcon_password: process.env.PALWORLD_RCON_PASSWORD || 'C405391*c',
+    container_name: process.env.PALWORLD_CONTAINER_NAME || '',
+    rcon_host: process.env.PALWORLD_RCON_HOST || '',
+    rcon_port: process.env.PALWORLD_RCON_PORT ? parseInt(process.env.PALWORLD_RCON_PORT) : 0,
+    rcon_password: process.env.PALWORLD_RCON_PASSWORD || '',
   },
 };
 

@@ -5,5 +5,5 @@
     "source.fixAll": "explicit"
   },
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "cSpell.words": ["Minecraft"]
+  "cSpell.words": ["Minecraft", "palworld"]
 }

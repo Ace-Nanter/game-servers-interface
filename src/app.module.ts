@@ -1,11 +1,11 @@
-import { Module } from '@nestjs/common';
-import { CommandsController } from './controllers/commands.controller';
-import { CommandsService } from './services/commands.service';
-import { DockerService } from './services/docker.service';
-import { RconService } from './services/rcon.service';
-import { StatusController } from './controllers/status.controller';
-import { StatusService } from './services/status.service';
 import { HttpModule } from '@nestjs/axios';
+import { DynamicModule, Module } from '@nestjs/common';
+import config from './config';
+import { MinecraftController } from './controllers/minecraft.controller';
+import { PalworldController } from './controllers/palworld.controller';
+import { DockerService } from './services/docker.service';
+import { MinecraftService } from './services/minecraft.service';
+import { PalworldService } from './services/palworld.service';
 
 @Module({
   imports: [
@@ -14,7 +14,28 @@ import { HttpModule } from '@nestjs/axios';
       socketPath: '/var/run/docker.sock',
     }),
   ],
-  controllers: [StatusController, CommandsController],
-  providers: [DockerService, RconService, StatusService, CommandsService],
 })
-export class AppModule {}
+export class AppModule {
+  static forRoot(): DynamicModule {
+    const controllers = [];
+    const providers = [];
+
+    providers.push(DockerService);
+
+    if (config.minecraft.rcon_host && config.minecraft.rcon_port) {
+      controllers.push(MinecraftController);
+      providers.push(MinecraftService);
+    }
+
+    if (config.palworld.rcon_host && config.palworld.rcon_port) {
+      controllers.push(PalworldController);
+      providers.push(PalworldService);
+    }
+
+    return {
+      module: AppModule,
+      providers: providers,
+      controllers: controllers,
+    };
+  }
+}

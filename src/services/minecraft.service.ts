@@ -1,5 +1,5 @@
 import { DockerService } from './docker.service';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import config from 'src/config';
 import { Status } from 'src/models/status.type';
 import { GameService } from './game.service';
@@ -7,7 +7,7 @@ import { Rcon } from '../utils/rcon.utils';
 
 @Injectable()
 export class MinecraftService implements GameService {
-  private rconOptions = {
+  private static readonly RCON_OPTIONS = {
     tcp: true,
     challenge: false,
   };
@@ -20,15 +20,19 @@ export class MinecraftService implements GameService {
       // Docker way
       return this.dockerService.getContainerStatus(config.minecraft.container_name);
     } else {
-      return await new Promise<Status>((resolve, reject) => {
+      return await new Promise<Status>((resolve) => {
         const client = this.getClient();
 
         client.on('auth', () => client.send('info'));
+
         client.on('server', () => {
           resolve('STARTED');
           client.disconnect();
         });
-        client.on('error', (str: string) => reject(str));
+
+        client.on('error', () => {
+          resolve('STOPPED');
+        });
 
         client.connect();
       });
@@ -47,7 +51,7 @@ export class MinecraftService implements GameService {
         client.disconnect();
 
         if (!response) {
-          reject('An error occured');
+          reject(new HttpException('No response received from server', HttpStatus.INTERNAL_SERVER_ERROR));
         } else {
           const playerList = response.trim().split(':')[1].split(',');
 
@@ -60,24 +64,70 @@ export class MinecraftService implements GameService {
         }
       });
 
-      client.on('error', function (str: string) {
-        reject(str);
+      client.on('error', function (error: string) {
+        reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
       });
 
       client.connect();
     });
   }
 
-  startServer(): Promise<void> {
-    if (!this.isDockerEnabled()) return Promise.reject('Error: Docker not enabled for game minecraft!');
+  async startServer(): Promise<void> {
+    if (!this.isDockerEnabled()) {
+      return Promise.reject(new HttpException('Error: Docker not enabled for game minecraft!', HttpStatus.BAD_REQUEST));
+    }
 
     return this.dockerService.startContainer(config.minecraft.container_name);
   }
-  stopServer(): Promise<void> {
-    // TODO : if not Docker : error. Else broadcast, then save, then Docker stop
-    if (!this.isDockerEnabled()) return Promise.reject('Error: Docker not enabled for game minecraft!');
 
-    return this.dockerService.stopContainer(config.minecraft.container_name);
+  async stopServer(): Promise<void> {
+    if (!this.isDockerEnabled()) {
+      return Promise.reject(new HttpException('Error: Docker not enabled for game minecraft!', HttpStatus.BAD_REQUEST));
+    }
+
+    const connectedPlayers = await this.getPlayersOnline();
+    if (connectedPlayers.length > 0) {
+      return Promise.reject(new HttpException('Players are still connected!', HttpStatus.CONFLICT));
+    }
+
+    return new Promise((resolve, reject) => {
+      const client = this.getClient();
+      client.on('auth', function () {
+        client.send(`say Le serveur va s'arrêter dans une minute`);
+        setTimeout(() => {
+          client.send(`say Le serveur va s'arrêter dans 30 secondes`);
+        }, 30000);
+
+        setTimeout(() => {
+          client.send(`say Le serveur va s'arrêter dans 10 secondes`);
+        }, 50000);
+
+        setTimeout(() => {
+          client.send('save-all');
+        }, 60000);
+      });
+
+      client.on('server', function (resp: string) {
+        Logger.log(resp);
+
+        if (resp === 'Complete Save') {
+          client.send(`stop`);
+        }
+      });
+
+      client.on('error', function (error: string) {
+        Logger.error(error);
+        reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
+      });
+
+      client.on('end', function () {
+        Logger.log(`Stopping ${config.minecraft.container_name} container`);
+        this.dockerService.stopContainer(config.minecraft.container_name);
+      });
+
+      client.connect();
+      resolve();
+    });
   }
 
   private isDockerEnabled(): boolean {
@@ -89,7 +139,7 @@ export class MinecraftService implements GameService {
       config.minecraft.rcon_host,
       config.minecraft.rcon_port,
       config.minecraft.rcon_password,
-      this.rconOptions,
+      MinecraftService.RCON_OPTIONS,
     );
   }
 }

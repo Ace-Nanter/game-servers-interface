@@ -20,15 +20,19 @@ export class PalworldService implements GameService {
       // Docker way
       return this.dockerService.getContainerStatus(config.palworld.container_name);
     } else {
-      return await new Promise<Status>((resolve, reject) => {
+      return await new Promise<Status>((resolve) => {
         const client = this.getClient();
 
         client.on('auth', () => client.send('info'));
+
         client.on('server', () => {
           resolve('STARTED');
           client.disconnect();
         });
-        client.on('error', (str: string) => reject(new HttpException(str, HttpStatus.INTERNAL_SERVER_ERROR)));
+
+        client.on('error', () => {
+          resolve('STOPPED');
+        });
 
         client.connect();
       });
@@ -77,7 +81,6 @@ export class PalworldService implements GameService {
   }
 
   async stopServer(): Promise<void> {
-    // TODO : if not Docker : error. Else broadcast, then save, then Docker stop
     if (!this.isDockerEnabled()) {
       return Promise.reject(new HttpException('Error: Docker not enabled for game palworld!', HttpStatus.BAD_REQUEST));
     }

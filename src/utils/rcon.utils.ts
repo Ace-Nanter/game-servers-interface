@@ -151,7 +151,6 @@ export class Rcon extends events.EventEmitter {
     }
   };
 
-  // TODO : à revoir
   private _tcpSocketOnData = (data: Buffer) => {
     if (this.outstandingData != null) {
       data = Buffer.concat([this.outstandingData, data], this.outstandingData.length + data.length);

@@ -48,7 +48,7 @@ jobs:
     needs: checkAndBuild
     env:
       DOCKER_REGISTRY_HOST: docker-registry.pandore.ovh
-      IMAGE_NAME: mc-interface
+      IMAGE_NAME: game-servers-interface
 
     steps:
       - name: Checkout repository

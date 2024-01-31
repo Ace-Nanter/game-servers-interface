@@ -1,6 +1,6 @@
 {
   "name": "game-servers-interface",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Provides HTTP endpoint for game servers running in Docker and providing RCON server",
   "author": "Ace Nanter",
   "private": true,

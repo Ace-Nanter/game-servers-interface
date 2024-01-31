@@ -13,7 +13,7 @@ export class PalworldService implements GameService {
   };
 
   // eslint-disable-next-line no-unused-vars
-  constructor(private dockerService: DockerService) {}
+  constructor(private readonly dockerService: DockerService) {}
 
   async getServerStatus(): Promise<Status> {
     if (this.isDockerEnabled()) {
@@ -43,11 +43,11 @@ export class PalworldService implements GameService {
     return await new Promise<string[]>((resolve, reject) => {
       const client = this.getClient();
 
-      client.on('auth', function () {
+      client.on('auth', () => {
         client.send('showPlayers');
       });
 
-      client.on('server', function (resp: string) {
+      client.on('server', (resp: string) => {
         client.disconnect();
 
         if (!resp) {
@@ -64,7 +64,8 @@ export class PalworldService implements GameService {
         }
       });
 
-      client.on('error', function (error: string) {
+      client.on('error', (error: string) => {
+        Logger.error(error);
         reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
       });
 
@@ -90,44 +91,43 @@ export class PalworldService implements GameService {
       return Promise.reject(new HttpException('Players are still connected!', HttpStatus.CONFLICT));
     }
 
-    return new Promise((resolve, reject) => {
-      const client = this.getClient();
-      client.on('auth', function () {
-        client.send(`Broadcast Le_serveur_va_s'arreter_dans_une_minute`);
-        setTimeout(() => {
-          client.send(`Broadcast Le_serveur_va_s'arreter_dans_trente_secondes`);
-        }, 30000);
+    const client = this.getClient();
+    client.on('auth', () => {
+      client.send(`Broadcast Le_serveur_va_s'arreter_dans_une_minute`);
+      setTimeout(() => {
+        client.send(`Broadcast Le_serveur_va_s'arreter_dans_trente_secondes`);
+      }, 30000);
 
-        setTimeout(() => {
-          client.send(`Broadcast Le_serveur_va_s'arreter_dans_vingt_secondes`);
-        }, 40000);
+      setTimeout(() => {
+        client.send(`Broadcast Le_serveur_va_s'arreter_dans_vingt_secondes`);
+      }, 40000);
 
-        setTimeout(() => {
-          client.send('Save');
-        }, 50000);
-      });
+      setTimeout(() => {
+        client.send('Save');
+      }, 50000);
 
-      client.on('server', function (resp: string) {
-        Logger.log(resp);
-
-        if (resp === 'Complete Save') {
-          client.send(`Shutdown 10`);
-        }
-      });
-
-      client.on('error', function (error: string) {
-        Logger.error(error);
-        reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
-      });
-
-      client.on('end', function () {
-        Logger.log(`Stopping ${config.palworld.container_name} container`);
-        this.dockerService.stopContainer(config.palworld.container_name);
-      });
-
-      client.connect();
-      resolve();
+      return Promise.resolve();
     });
+
+    client.on('server', (resp: string) => {
+      Logger.log(resp);
+
+      if (resp === 'Complete Save') {
+        client.send(`Shutdown 10`);
+      }
+    });
+
+    client.on('error', (error: string) => {
+      Logger.error(error);
+      return Promise.reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
+    });
+
+    client.on('end', () => {
+      Logger.log(`Stopping ${config.palworld.container_name} container`);
+      this.dockerService.stopContainer(config.palworld.container_name);
+    });
+
+    client.connect();
   }
 
   private isDockerEnabled(): boolean {

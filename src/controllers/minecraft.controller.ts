@@ -4,7 +4,7 @@ import { MinecraftService } from 'src/services/minecraft.service';
 @Controller('minecraft')
 export class MinecraftController {
   // eslint-disable-next-line no-unused-vars
-  constructor(private minecraftService: MinecraftService) {}
+  constructor(private readonly minecraftService: MinecraftService) {}
 
   @Get('status')
   async getServerStatus(): Promise<string> {

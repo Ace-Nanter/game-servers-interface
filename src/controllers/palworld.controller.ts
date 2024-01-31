@@ -4,7 +4,7 @@ import { PalworldService } from './../services/palworld.service';
 @Controller('palworld')
 export class PalworldController {
   // eslint-disable-next-line no-unused-vars
-  constructor(private palworldService: PalworldService) {}
+  constructor(private readonly palworldService: PalworldService) {}
 
   @Get('status')
   async getServerStatus(): Promise<string> {

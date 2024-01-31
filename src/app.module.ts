@@ -34,8 +34,8 @@ export class AppModule {
 
     return {
       module: AppModule,
-      providers: providers,
       controllers: controllers,
+      providers: providers,
     };
   }
 }

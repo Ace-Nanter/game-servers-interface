@@ -13,7 +13,7 @@ export class MinecraftService implements GameService {
   };
 
   // eslint-disable-next-line no-unused-vars
-  constructor(private dockerService: DockerService) {}
+  constructor(private readonly dockerService: DockerService) {}
 
   async getServerStatus(): Promise<Status> {
     if (this.isDockerEnabled()) {
@@ -43,11 +43,11 @@ export class MinecraftService implements GameService {
     return await new Promise<string[]>((resolve, reject) => {
       const client = this.getClient();
 
-      client.on('auth', function () {
+      client.on('auth', () => {
         client.send('list');
       });
 
-      client.on('server', function (response: string) {
+      client.on('response', (response: string) => {
         client.disconnect();
 
         if (!response) {
@@ -55,7 +55,7 @@ export class MinecraftService implements GameService {
         } else {
           const playerList = response.trim().split(':')[1].split(',');
 
-          if (playerList.length === 0) {
+          if (playerList.length === 1 && !playerList[0]) {
             Logger.debug('No players connected');
             resolve([]);
           } else {
@@ -64,7 +64,8 @@ export class MinecraftService implements GameService {
         }
       });
 
-      client.on('error', function (error: string) {
+      client.on('error', (error: string) => {
+        Logger.error(error);
         reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
       });
 
@@ -90,44 +91,43 @@ export class MinecraftService implements GameService {
       return Promise.reject(new HttpException('Players are still connected!', HttpStatus.CONFLICT));
     }
 
-    return new Promise((resolve, reject) => {
-      const client = this.getClient();
-      client.on('auth', function () {
-        client.send(`say Le serveur va s'arrêter dans une minute`);
-        setTimeout(() => {
-          client.send(`say Le serveur va s'arrêter dans 30 secondes`);
-        }, 30000);
+    const client = this.getClient();
+    client.on('auth', () => {
+      client.send(`say Le serveur va s'arrêter dans une minute`);
+      setTimeout(() => {
+        client.send(`say Le serveur va s'arrêter dans 30 secondes`);
+      }, 30000);
 
-        setTimeout(() => {
-          client.send(`say Le serveur va s'arrêter dans 10 secondes`);
-        }, 50000);
+      setTimeout(() => {
+        client.send(`say Le serveur va s'arrêter dans 10 secondes`);
+      }, 50000);
 
-        setTimeout(() => {
-          client.send('save-all');
-        }, 60000);
-      });
+      setTimeout(() => {
+        client.send('save-all');
+      }, 60000);
 
-      client.on('server', function (resp: string) {
-        Logger.log(resp);
-
-        if (resp === 'Complete Save') {
-          client.send(`stop`);
-        }
-      });
-
-      client.on('error', function (error: string) {
-        Logger.error(error);
-        reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
-      });
-
-      client.on('end', function () {
-        Logger.log(`Stopping ${config.minecraft.container_name} container`);
-        this.dockerService.stopContainer(config.minecraft.container_name);
-      });
-
-      client.connect();
-      resolve();
+      return Promise.resolve();
     });
+
+    client.on('response', (resp: string) => {
+      Logger.log(resp);
+
+      if (resp.includes('Saved the game')) {
+        client.send(`stop`);
+      }
+    });
+
+    client.on('error', (error: string) => {
+      Logger.error(error);
+      return Promise.reject(new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR));
+    });
+
+    client.on('end', () => {
+      Logger.log(`Stopping ${config.minecraft.container_name} container`);
+      this.dockerService.stopContainer(config.minecraft.container_name);
+    });
+
+    client.connect();
   }
 
   private isDockerEnabled(): boolean {

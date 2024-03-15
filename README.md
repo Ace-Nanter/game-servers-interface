@@ -26,7 +26,7 @@ Game servers Interface is a simple service which can be used to manage a Docker 
 
 - Minecraft
 - Palworld
-- Ark (Coming soon, I hope)
+- Ark
 
 ## How to use
 

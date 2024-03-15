@@ -6,6 +6,8 @@ import { PalworldController } from './controllers/palworld.controller';
 import { DockerService } from './services/docker.service';
 import { MinecraftService } from './services/minecraft.service';
 import { PalworldService } from './services/palworld.service';
+import { ArkController } from './controllers/ark.controller';
+import { ArkService } from './services/ark.service';
 
 @Module({
   imports: [
@@ -30,6 +32,11 @@ export class AppModule {
     if (config.palworld.rcon_host && config.palworld.rcon_port) {
       controllers.push(PalworldController);
       providers.push(PalworldService);
+    }
+
+    if (config.ark.rcon_host && config.ark.rcon_port) {
+      controllers.push(ArkController);
+      providers.push(ArkService);
     }
 
     return {

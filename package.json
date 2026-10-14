@@ -50,6 +50,13 @@
     "tsconfig-paths": "4.2.0",
     "typescript": "^5.3.3"
   },
+  "overrides": {
+    "body-parser": ">=1.20.6",
+    "qs": "6.16.0",
+    "@nestjs/cli": {
+      "glob": ">=10.5.0"
+    }
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",

@@ -8,6 +8,8 @@ import { MinecraftService } from './services/minecraft.service';
 import { PalworldService } from './services/palworld.service';
 import { ArkController } from './controllers/ark.controller';
 import { ArkService } from './services/ark.service';
+import { EnshroudedController } from './controllers/enshrouded.controller';
+import { EnshroudedService } from './services/enshrouded.service';
 
 @Module({
   imports: [
@@ -37,6 +39,12 @@ export class AppModule {
     if (config.ark.rcon_host && config.ark.rcon_port) {
       controllers.push(ArkController);
       providers.push(ArkService);
+    }
+
+    // Enshrouded has no RCON: its container name is the only thing needed to enable it.
+    if (config.enshrouded.container_name) {
+      controllers.push(EnshroudedController);
+      providers.push(EnshroudedService);
     }
 
     return {

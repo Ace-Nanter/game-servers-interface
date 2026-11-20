@@ -35,8 +35,11 @@ export const config = {
     rcon_password: process.env.PALWORLD_RCON_PASSWORD || '',
   },
   // Enshrouded exposes no RCON at all: status/start/stop go through the Docker socket only.
+  // Player presence is maintained in memory from the webhook notifications the
+  // game image posts to this API (see EnshroudedService).
   enshrouded: {
     container_name: process.env.ENSHROUDED_CONTAINER_NAME || '',
+    webhook_token: process.env.ENSHROUDED_WEBHOOK_TOKEN || '',
   },
 };
 

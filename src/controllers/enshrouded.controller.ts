@@ -16,6 +16,11 @@ export class EnshroudedController {
     return await this.enshroudedService.getPlayersOnline();
   }
 
+  @Get('players/count')
+  async getPlayerCount(): Promise<{ online: number; max: number }> {
+    return await this.enshroudedService.getPlayerCount();
+  }
+
   @Post('start')
   @HttpCode(204)
   async startContainer(): Promise<void> {
